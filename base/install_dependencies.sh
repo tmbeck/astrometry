@@ -9,5 +9,5 @@ else
   echo "-------------------------------------------------------------"
   echo "Non-arm processor detected >> using CentOS 7 install scripts."
   echo "-------------------------------------------------------------"
-  $SCRIPT_DIR/intel/intel_install.sh
+  $SCRIPT_DIR/intel/intel_ubuntu_install.sh
 fi

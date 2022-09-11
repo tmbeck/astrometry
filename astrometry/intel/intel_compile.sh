@@ -5,7 +5,6 @@
 # export LD_LIBRARY_PATH=/user/lib64:/usr/lib
 export PATH=${PATH}:/usr/local/astrometry/bin
 
-
 # clone the repo:
 git clone https://github.com/dstndstn/astrometry.net.git
 cd astrometry.net
@@ -18,13 +17,16 @@ ORIGINAL_LINE_START='NETPBM_INC.*'
 REPLACE_WITH='NETPBM_INC ?= -I\/usr\/include\/netpbm\/'
 sed -i "s/$ORIGINAL_LINE_START/$REPLACE_WITH/g" makefile.netpbm
 ORIGINAL_LINE_START='NETPBM_LIB.*'
-REPLACE_WITH='NETPBM_LIB ?= -L\/usr\/lib64 -lnetpbm'
+REPLACE_WITH='NETPBM_LIB ?= -L\/usr\/lib -lnetpbm'
 sed -i "s/$ORIGINAL_LINE_START/$REPLACE_WITH/g" makefile.netpbm
-cd ..
+cd -
 
 # compile/install:
 make config > /install/config_results
-make
-make extra
-make py
-make install
+make -j$(nproc) && \
+    make -j$(nproc) py && \
+    make -j$(nproc) extra && \
+    make install INSTALL_DIR=/usr/local #&& \
+    #make clean
+
+cd - #&& rm -rf astrometry.net
