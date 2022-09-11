@@ -43,6 +43,7 @@ COPY ./nova/solve_script.sh /astrometry.net/net/
 COPY ./docker-entrypoint.sh /
 # add any example index files:
 COPY ./index/*.fits /usr/local/astrometry/data/
+COPY ./astrometry/astrometry.cfg /usr/local/etc/astrometry.cfg
 # add utility script for downloading index files to astrometry/bin, which is part of the path:
 COPY ./index/download_index_files.sh /usr/local/astrometry/bin/
 
