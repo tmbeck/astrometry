@@ -1,4 +1,0 @@
-DATABASE_USER = 'nova'
-DATABASE_PASSWORD = ''
-DATABASE_HOST = 'localhost'
-DATABASE_PORT = ''
