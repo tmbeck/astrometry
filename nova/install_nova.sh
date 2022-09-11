@@ -15,8 +15,6 @@ pip install --no-cache-dir Django \
                        django-social-auth3 \
                        gunicorn
 
-# add secrets:
-cp -r secrets/ /astrometry.net/net/
 # install astrometry python package:
 cd /astrometry.net/net
 
@@ -42,10 +40,3 @@ cat <<EOF >> ./settings_common.py
 # Allow any:
 ALLOWED_HOSTS = ['*']
 EOF
-
-#cat <<EOF >> ./urls.py
-## Allow static file serving via wsgi app in Docker container:
-#from django.conf.urls import patterns
-#urlpatterns += patterns('',(r'^static/(?P<path>.*)$', 'django.views.static.serve', {'document_root': settings.STATICFILES_DIRS[0]}),)
-#EOF
-

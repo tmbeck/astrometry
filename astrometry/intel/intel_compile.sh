@@ -27,6 +27,6 @@ make -j$(nproc) && \
     make -j$(nproc) py && \
     make -j$(nproc) extra && \
     make install INSTALL_DIR=/usr/local #&& \
-    #make clean
+#    make clean
 
 cd - #&& rm -rf astrometry.net
