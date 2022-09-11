@@ -11,9 +11,25 @@ docker build -t tmbeck/astrometry:latest .
 docker run --rm -p 8000:8000 -v /usr/local/astrometry/data:/usr/local/astrometry/data tmbeck/astrometry:latest
 ```
 
+Note that Raspberry Pi support is not working at this time.
+
+### Changes
+
+The original containers were built using CentOS7 or later and targeted an out of date version of [dstndstn/astrometry.net](https://github.com/dstndstn/astrometry.net). This new version does the following:
+
+* Migrates to a modern container (`ubuntu:22.04`)
+* Adds multistage builds (will eventually allow for much smaller images)
+
+Planned changes:
+
+* Finish multistage build cleanup
+* Improve multiarch support (so RPi works again)
+* Add ability to watch folders on the host system, a la [fergusL/astrometry](https://github.com/fergusL/astrometry)
+* Add support for cr2 handling
+
 ## Overview
 
-(from [dm90/astrometry](https://hub.docker.com/r/dm90/astrometry/))
+(from [dm90/astrometry](https://hub.docker.com/r/dm90/astrometry/) and left here now for posterity)
 
 I wanted to be able to spin up a local plate solver (including web API) and with (almost) zero configuration.  In my case, I use [astrometry.net](http://astrometry.net) (ADN) to assist building mount models for my telescope.  It would be nice to have an ADN server on a laptop, or perhaps a raspberry pi to give me ADN's capability even when I lack access to the interwebs.  This capability is similar to [ansvr](https://adgsoftware.com/ansvr/) on Windows, but will work on any operating system that can run Docker. (I really do not enjoy windows...)
 
