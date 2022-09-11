@@ -1,6 +1,19 @@
 Astrometry.net ready out-of-the-box for local plate solving using Docker.
 
+## Introduction
+
+This is an update to [dm90/astrometry](https://hub.docker.com/r/dm90/astrometry/) with (planned) integrations from the fork [fergusL/astrometry](https://github.com/fergusL/astrometry).
+
+As of 2022-09-11 it builds and solves plates (assuming the necessary index files are downloaded). Download them to `/usr/local/astrometry/data` on your host then build and run like so:
+
+```
+docker build -t tmbeck/astrometry:latest .
+docker run --rm -p 8000:8000 -v /usr/local/astrometry/data:/usr/local/astrometry/data tmbeck/astrometry:latest
+```
+
 ## Overview
+
+(from [dm90/astrometry](https://hub.docker.com/r/dm90/astrometry/))
 
 I wanted to be able to spin up a local plate solver (including web API) and with (almost) zero configuration.  In my case, I use [astrometry.net](http://astrometry.net) (ADN) to assist building mount models for my telescope.  It would be nice to have an ADN server on a laptop, or perhaps a raspberry pi to give me ADN's capability even when I lack access to the interwebs.  This capability is similar to [ansvr](https://adgsoftware.com/ansvr/) on Windows, but will work on any operating system that can run Docker. (I really do not enjoy windows...)
 
