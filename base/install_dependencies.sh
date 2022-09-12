@@ -7,7 +7,7 @@ if [[ $(uname -m) == arm* ]]; then
   $SCRIPT_DIR/arm/rpi_install.sh
 else
   echo "-------------------------------------------------------------"
-  echo "Non-arm processor detected >> using CentOS 7 install scripts."
+  echo "Non-arm processor detected >> using x86 install scripts."
   echo "-------------------------------------------------------------"
   $SCRIPT_DIR/intel/intel_ubuntu_install.sh
 fi
