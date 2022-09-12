@@ -47,6 +47,6 @@ cd cfitsio-4.1.0 && \
 cd -
 rm -rf cfitsio-4.1.0
 
-pip install --no-cache-dir fitsio astropy
+pip install --no-cache-dir fitsio astropy rawpy imageio
 
 update-alternatives --install /usr/bin/python python /usr/bin/python3.10 1
