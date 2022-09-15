@@ -7,6 +7,9 @@ COPY ./base /install/base
 WORKDIR /install/base
 RUN ["./install_dependencies.sh"]
 
+RUN update-alternatives --install /usr/bin/python python /usr/bin/python3.10 1
+RUN pip install --no-cache-dir -r /install/base/requirements.txt
+
 FROM base as astrometry_base
 # ----------------------------------------------
 #            ASTROMETRY INSTALLATION
