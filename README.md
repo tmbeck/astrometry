@@ -8,10 +8,19 @@ As of 2022-09-11 it builds and solves plates (assuming the necessary index files
 
 ```
 docker build -t tmbeck/astrometry:latest .
-docker run --rm -p 8000:8000 -v /usr/local/astrometry/data:/usr/local/astrometry/data tmbeck/astrometry:latest
+docker run --name astrometry --rm -p 8000:8000 \
+  -v /usr/local/astrometry/data:/usr/local/astrometry/data \
+  -v $(pwd)/media/sample.jpg:/sample.jpg \
+  tmbeck/astrometry:latest
 ```
 
-Note that Raspberry Pi support is not working at this time.
+And to test submission:
+
+```
+docker exec -it astrometry python /client.py --server http://localhost:8000/api/ -k "XXXXXXX" -u /sample.jpg -w
+```
+
+*Note that Raspberry Pi support is not working at this time.*
 
 ### Changes
 
@@ -26,6 +35,13 @@ Planned changes:
 * Improve multiarch support (so RPi works again)
 * Add ability to watch folders on the host system, a la [fergusL/astrometry](https://github.com/fergusL/astrometry)
 * Add support for cr2 handling
+
+### Volatile Data
+
+Other than the fits index images mentioned above, you may wish to persist the following data the astrometry generates.
+
+* `/astrometry.net/net/data`: Contains user uploads and job results.
+* `/astrometry.net/net/django.sqlite3`: Contains the website user database. See `astrometry.net/net/settings.py`.
 
 ## Overview
 
