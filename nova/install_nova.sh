@@ -9,6 +9,11 @@ cd /astrometry.net/net
 # link basic settings file:
 ln -s settings_test.py settings.py
 
+cat <<EOF >> ./settings_common.py
+# Allow any:
+ALLOWED_HOSTS = ['*']
+EOF
+
 mkdir appsecrets
 touch appsecrets/__init__.py
 touch appsecrets/auth.py
@@ -23,8 +28,3 @@ python manage.py makemigrations && \
     python manage.py migrate net && \
     python manage.py loaddata fixtures/initial_data.json && \
     python manage.py loaddata fixtures/flags.json
-
-cat <<EOF >> ./settings_common.py
-# Allow any:
-ALLOWED_HOSTS = ['*']
-EOF
