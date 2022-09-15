@@ -3,18 +3,6 @@
 # Logs go here, see https://github.com/dstndstn/astrometry.net/blob/abe3582fb4bd7bcd9c0b2fdfa17c1a8b38d9887f/net/wsgi.py#L22
 mkdir -p /data/nova
 
-pip install --no-cache-dir Django \
-                       python-openid \
-                       django-openid-auth \
-                       South \
-                       Pillow \
-                       simplejson \
-                       social-auth-core \
-                       matplotlib \
-                       social-auth-app-django \
-                       django-social-auth3 \
-                       gunicorn
-
 # install astrometry python package:
 cd /astrometry.net/net
 

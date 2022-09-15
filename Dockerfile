@@ -41,6 +41,8 @@ COPY ./nova/solve_script.sh /astrometry.net/net/
 COPY ./docker-entrypoint.sh /
 COPY ./client.py /
 COPY ./astrometry/astrometry.cfg /usr/local/etc/astrometry.cfg
+RUN apt purge -y build-essential make gcc git
+RUN apt autoremove -y
 
 FROM nova as astrometry
 # ----------------------------------------------
