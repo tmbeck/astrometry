@@ -28,7 +28,6 @@ apt-get -y update && apt-get install -y apt-utils && \
     python3 \
     python3-dev \
     python3-pip \
-    python3-pil \
     python3-tk \
     python3-setuptools \
     python3-wheel \
