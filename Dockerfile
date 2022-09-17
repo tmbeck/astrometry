@@ -3,12 +3,43 @@ FROM ubuntu:22.04 AS base
 # ----------------------------------------------
 #               BASE INSTALLATION
 # ----------------------------------------------
-COPY ./base /install/base
-WORKDIR /install/base
-RUN ["./install_dependencies.sh"]
+RUN apt-get -y update && apt-get install -y --no-install-recommends apt-utils
+ARG DEBIAN_FRONTEND=noninteractive 
+RUN apt-get install -y --no-install-recommends \
+    apt-utils \
+    tzdata \
+    build-essential \
+    make \
+    gcc \
+    git \
+    file \
+    pkg-config \
+    wget \
+    curl \
+    swig \
+    netpbm \
+    wcslib-dev \
+    wcslib-tools \
+    zlib1g-dev \
+    libbz2-dev \
+    libcairo2-dev \
+    libcfitsio-dev \
+    libcfitsio-bin \
+    libgsl-dev \
+    libjpeg-dev \
+    libnetpbm10-dev \
+    libpng-dev \
+    python3 \
+    python3-dev \
+    python3-pip \
+    python3-tk \
+    python3-setuptools \
+    python3-wheel \
+    && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 RUN update-alternatives --install /usr/bin/python python /usr/bin/python3.10 1
-RUN pip install --no-cache-dir -r /install/base/requirements.txt
+COPY ./base/requirements.txt /requirements.txt
+RUN pip install --no-cache-dir -r /requirements.txt
 
 FROM base as astrometry_base
 # ----------------------------------------------
