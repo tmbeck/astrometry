@@ -127,7 +127,7 @@ class Client(object):
         args = { 'apikey' : apikey }
         result = self.send_request('login', args)
         sess = result.get('session')
-        logging.info('Got session:', sess)
+        logging.info(f'Got session: {sess}')
         if not sess:
             raise RequestError('no session in result')
         self.session = sess
