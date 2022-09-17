@@ -7,13 +7,18 @@
 # Licensed under a 3-clause BSD style license - see LICENSE
 # https://github.com/dstndstn/astrometry.net
 
-from __future__ import print_function
 import os
 import sys
 import time
 import base64
 import rawpy
 import imageio
+import logging
+
+logging.basicConfig(
+                    stream = sys.stdout, 
+                    format = "%(levelname)s %(asctime)s - %(message)s",
+                    level = logging.INFO)
 
 try:
     # py3
@@ -25,13 +30,6 @@ except ImportError:
     from urllib import urlencode, quote
     from urllib2 import urlopen, Request, HTTPError
 
-#from exceptions import Exception
-from email.mime.base import MIMEBase
-from email.mime.multipart import MIMEMultipart
-from email.mime.application  import MIMEApplication
-
-from email.encoders import encode_noop
-
 import json
 from watchfiles import Change, DefaultFilter, watch, awatch
 
@@ -41,7 +39,6 @@ def json2python(data):
     except:
         pass
     return None
-python2json = json.dumps
 
 class MalformedResponse(Exception):
     pass
@@ -66,11 +63,11 @@ class Client(object):
         '''
         if self.session is not None:
             args.update({ 'session' : self.session })
-        print('Python:', args)
-        json = python2json(args)
-        print('Sending json:', json)
+        logging.info(f'Python: {args}')
+        json_data = json.dumps(args)
+        logging.info(f"Sending JSON: {json_data}")
         url = self.get_url(service)
-        print('Sending to URL:', url)
+        logging.info(f"Sending to URL: {url}")
 
         # If we're sending a file, format a multipart/form-data
         if file_args is not None:
@@ -85,7 +82,7 @@ class Client(object):
                 'MIME-Version: 1.0\r\n' +
                 'Content-disposition: form-data; name="request-json"\r\n' +
                 '\r\n' +
-                json + '\n' +
+                json_data + '\n' +
                 '--' + boundary + '\n' +
                 'Content-Type: application/octet-stream\r\n' +
                 'MIME-Version: 1.0\r\n' +
@@ -97,39 +94,40 @@ class Client(object):
 
         else:
             # Else send x-www-form-encoded
-            data = {'request-json': json}
-            print('Sending form data:', data)
+            data = {'request-json': json_data}
+            logging.info(f'Sending form data: {data}')
             data = urlencode(data)
             data = data.encode('utf-8')
-            print('Sending data:', data)
+            logging.info(f'Sending data: {data}')
             headers = {}
 
         request = Request(url=url, headers=headers, data=data)
 
         try:
             f = urlopen(request)
-            print('Got reply HTTP status code:', f.status)
+            logging.info(f'Got reply HTTP status code: {f.status}')
             txt = f.read()
-            print('Got json:', txt)
+            logging.info(f'Got JSON: {txt}')
             result = json2python(txt)
-            print('Got result:', result)
+            logging.info(f'Got result: {result}')
             stat = result.get('status')
-            print('Got status:', stat)
+            logging.info(f'Got status: {stat}')
             if stat == 'error':
                 errstr = result.get('errormessage', '(none)')
                 raise RequestError('server error message: ' + errstr)
             return result
         except HTTPError as e:
-            print('HTTPError', e)
+            logging.error(f'HTTPError: {e}')
             txt = e.read()
-            open('err.html', 'wb').write(txt)
-            print('Wrote error text to err.html')
+            with open('error.html', 'wb') as errf:
+                errf.write(txt)
+            logging.error('Wrote error text to error.html')
 
     def login(self, apikey):
         args = { 'apikey' : apikey }
         result = self.send_request('login', args)
         sess = result.get('session')
-        print('Got session:', sess)
+        logging.info('Got session:', sess)
         if not sess:
             raise RequestError('no session in result')
         self.session = sess
@@ -166,7 +164,7 @@ class Client(object):
                 args.update({key: val})
             elif default is not None:
                 args.update({key: default})
-        print('Upload args:', args)
+        logging.info('Upload args:', args)
         return args
 
     def url_upload(self, url, **kwargs):
@@ -183,8 +181,8 @@ class Client(object):
                 f = open(fn, 'rb')
                 file_args = (fn, f.read())
             except IOError:
-                print('File %s does not exist' % fn)
-                raise
+                logging.error(f'File {fn} does not exist!')
+                raise FileNotFoundError(f'File {fn} does not exist!')
         return self.send_request('upload', args, file_args)
 
     def submission_images(self, subid):
@@ -200,11 +198,12 @@ class Client(object):
                       cd21 = wcs.cd[2], cd22 = wcs.cd[3],
                       imagew = wcs.imagew, imageh = wcs.imageh)
         result = self.send_request(service, {'wcs':params})
-        print('Result status:', result['status'])
+        logging.info('Result status:', result['status'])
         plotdata = result['plot']
         plotdata = base64.b64decode(plotdata)
-        open(outfn, 'wb').write(plotdata)
-        print('Wrote', outfn)
+        with open(outfn, 'wb') as outputf:
+            outputf.write(plotdata)
+        logging.info(f'Wrote plot to {outfn}')
 
     def sdss_plot(self, outfn, wcsfn, wcsext=0):
         return self.overlay_plot('sdss_image_for_wcs', outfn,
@@ -225,17 +224,17 @@ class Client(object):
         stat = result.get('status')
         if stat == 'success':
             result = self.send_request('jobs/%s/calibration' % job_id)
-            print('Calibration:', result)
+            logging.info(f'Calibration: {result}')
             result = self.send_request('jobs/%s/tags' % job_id)
-            print('Tags:', result)
+            logging.info(f'Tags: {result}')
             result = self.send_request('jobs/%s/machine_tags' % job_id)
-            print('Machine Tags:', result)
+            logging.info(f'Machine Tags: {result}')
             result = self.send_request('jobs/%s/objects_in_field' % job_id)
-            print('Objects in field:', result)
+            logging.info(f'Objects in field: {result}')
             result = self.send_request('jobs/%s/annotations' % job_id)
-            print('Annotations:', result)
+            logging.info(f'Annotations: {result}')
             result = self.send_request('jobs/%s/info' % job_id)
-            print('Calibration:', result)
+            logging.info(f'Calibration: {result}')
 
         return stat
 
@@ -307,8 +306,8 @@ def main_loop():
 
         stat = upres['status']
         if stat != 'success':
-            print('Upload failed: status', stat)
-            print(upres)
+            logging.error(f'Upload failed: status {stat}')
+            logging.error(upres)
             sys.exit(-1)
 
         opt.sub_id = upres['subid']
@@ -316,31 +315,31 @@ def main_loop():
     if opt.wait:
         if opt.solved_id is None:
             if opt.sub_id is None:
-                print("Can't --wait without a submission id or job id!")
+                logging.error("Can't '--wait' without a submission id or job id!")
                 sys.exit(-1)
 
             while True:
                 stat = c.sub_status(opt.sub_id, justdict=True)
-                print('Got status:', stat)
+                logging.info(f'Got status: {stat}', stat)
                 jobs = stat.get('jobs', [])
                 if len(jobs):
                     for j in jobs:
                         if j is not None:
                             break
                     if j is not None:
-                        print('Selecting job id', j)
+                        logging.info(f'Selecting job id {j}')
                         opt.solved_id = j
                         break
                 time.sleep(5)
 
         while True:
             stat = c.job_status(opt.solved_id, justdict=True)
-            print('Got job status:', stat)
+            logging.info(f'Got job status: {stat}')
             if stat.get('status','') in ['success']:
                 success = (stat['status'] == 'success')
                 break
             elif stat.get('status','') in ['failure']:
-                print("Image solving failed")
+                logging.error("Image solving failed!")
                 sys.exit(-1)
             time.sleep(5)
 
@@ -361,19 +360,20 @@ def main_loop():
             url = opt.server.replace('/api/', '/corr_file/%i' % opt.solved_id)
             retrieveurls.append((url, opt.corr))
 
-        for url,fn in retrieveurls:
-            print('Retrieving file from', url, 'to', fn)
-            f = urlopen(url)
-            txt = f.read()
-            w = open(fn, 'wb')
-            w.write(txt)
-            w.close()
-            print('Wrote to', fn)
+        for url, fn in retrieveurls:
+            logging.info(f'Retrieving file from {url} to {fn}')
+            
+            with urlopen(url) as f:
+                with f.read() as txt:
+                    with open(fn, 'wb') as outputf:
+                        outputf.write(txt)
+
+            logging.info(f'Wrote to {fn}')
 
         if opt.annotate:
             result = c.annotate_data(opt.solved_id)
             with open(opt.annotate,'w') as f:
-                f.write(python2json(result))
+                f.write(json.dumps(result))
 
     if opt.wait:
         # behaviour as in old implementation
@@ -387,24 +387,24 @@ def main_loop():
         c.galex_plot(outfn, wcsfn)
 
     if opt.sub_id:
-        print(c.sub_status(opt.sub_id))
+        logging.info(c.sub_status(opt.sub_id))
     if opt.job_id:
-        print(c.job_status(opt.job_id))
+        logging.info(c.job_status(opt.job_id))
 
     if opt.jobs_by_tag:
         tag = opt.jobs_by_tag
-        print(c.jobs_by_tag(tag, None))
+        logging.info(c.jobs_by_tag(tag, None))
     if opt.jobs_by_exact_tag:
         tag = opt.jobs_by_exact_tag
-        print(c.jobs_by_tag(tag, 'yes'))
+        logging.info(c.jobs_by_tag(tag, 'yes'))
 
     if opt.myjobs:
         jobs = c.myjobs()
-        print(jobs)
+        logging.info(jobs)
 
 
 if __name__ == '__main__':
-    print("Running with args %s"%sys.argv)
+    logging.info(f"Running with args {sys.argv}")
     import optparse
     parser = optparse.OptionParser()
     parser.add_option('--server', dest='server', default=Client.default_url,
@@ -473,16 +473,14 @@ if __name__ == '__main__':
         const='n',
         default='d',
         help='Select license to disallow commercial use of submission')
+
     opt,args = parser.parse_args()
 
     if opt.apikey is None:
-        # try the environment
         opt.apikey = os.environ.get('AN_API_KEY', None)
     if opt.apikey is None:
         parser.print_help()
-        print()
-        print('You must either specify --apikey or set AN_API_KEY')
-        sys.exit(-1)
+        logging.info('You must either specify --apikey or set AN_API_KEY')
 
     args = {}
     args['apiurl'] = opt.server
@@ -491,9 +489,9 @@ if __name__ == '__main__':
 
     if opt.watch is not None:
         if (os.path.isdir(opt.watch)):
-            print(f"Will watch folder: {os.path.abspath(opt.watch)}")
+            logging.info(f"Will watch folder: {os.path.abspath(opt.watch)}")
             if opt.upload or opt.upload_url or opt.upload_xy:
-                print("--watch specified, --upload options ignored.")
+                logging.info("--watch specified, --upload options ignored.")
         else:
             raise FileNotFoundError(f"No such directory: {os.path.abspath(opt.watch)}")
 
@@ -506,7 +504,7 @@ if __name__ == '__main__':
                         os.unlink(change[1])
                     elif change[1].endswith('.cr2'):
                         new_filename = change[1].replace('.cr2', '.jpg')
-                        print(f"Converting image: {change[1]} -> {new_filename}")
+                        logging.info(f"Converting image: {change[1]} -> {new_filename}")
                         with rawpy.imread(change[1]) as raw:
                             rgb = raw.postprocess(no_auto_bright=True, use_camera_wb=True)
                         imageio.imsave(new_filename, rgb, quality=80)
